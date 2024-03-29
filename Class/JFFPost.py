@@ -43,14 +43,14 @@ class JFFPost:
         self.title_legacy = config.file_name_format_legacy \
             .replace('{name}', self.name) \
             .replace('{post_date}', self.post_date) \
-            .replace('{post_id}', self.post_id[-5:]) \
+            .replace('{post_id}', self.post_id) \
             .replace('{desc}', self.desc_legacy) \
             .replace('{ext}', self.ext)
         
         self.title = config.file_name_format \
             .replace('{name}', self.name) \
             .replace('{post_date}', self.post_date) \
-            .replace('{post_id}', self.post_id[-5:]) \
+            .replace('{post_id}', self.post_id) \
             .replace('{desc}', self.desc) \
             .replace('{ext}', self.ext)
         

@@ -1,6 +1,7 @@
 # Justfor.Fans Ripper Changelog
 
 - 1.2.1
+    - Fix for the post ID not being sampled from a stable source, so it could change every run.
     - Fix for photo series not using the new file name format.
 
 - 1.2.0
