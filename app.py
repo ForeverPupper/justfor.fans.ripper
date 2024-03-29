@@ -148,7 +148,7 @@ def video_save(vpost):
     vpath_legacy = os.path.join(folder, cleanFilename(vpost.title_legacy))
     vpath = os.path.join(folder, cleanFilename(vpost.title))
 
-    if touch_only == True:
+    if touch_video_files_only == True:
         pathlib.Path(vpath).touch()
         skip_next_network_request_delay = True
     else:
@@ -216,22 +216,19 @@ def text_save(tpost):
     tpath_legacy = os.path.join(folder, cleanFilename(tpost.title_legacy))
     tpath = os.path.join(folder, cleanFilename(tpost.title))
 
-    if touch_only == True:
-        pathlib.Path(tpath).touch()
-    else:
-        if not config.overwrite_existing and os.path.exists(tpath_legacy) and tpath_legacy not in legacy_file_names_already_seen_this_run:
-            print(f'v: <<exists skip (legacy filename)>>: {tpath_legacy}', flush=True)
-            append_to_legacy_rename_script_file(folder, tpath_legacy, tpath)
-            legacy_file_names_already_seen_this_run.append(tpath_legacy)
-            return
-        
-        if not config.overwrite_existing and os.path.exists(tpath):
-            print(f'v: <<exists skip>>: {tpath}', flush=True)
-            return
+    if not config.overwrite_existing and os.path.exists(tpath_legacy) and tpath_legacy not in legacy_file_names_already_seen_this_run:
+        print(f'v: <<exists skip (legacy filename)>>: {tpath_legacy}', flush=True)
+        append_to_legacy_rename_script_file(folder, tpath_legacy, tpath)
+        legacy_file_names_already_seen_this_run.append(tpath_legacy)
+        return
+    
+    if not config.overwrite_existing and os.path.exists(tpath):
+        print(f'v: <<exists skip>>: {tpath}', flush=True)
+        return
 
-        text_file = open(tpath, "w", encoding='utf-8')
-        text_file.write(tpost.full_text)
-        text_file.close()
+    text_file = open(tpath, "w", encoding='utf-8')
+    text_file.write(tpost.full_text)
+    text_file.close()
 
 def parse_and_get(html_text):
     global skip_next_network_request_delay
@@ -313,9 +310,9 @@ if __name__ == "__main__":
 
     skip_next_network_request_delay = False
     
-    # if true then only create the files but don't download. Useful for getting
-    # the new filenames when a change has been made to file_name_format
-    touch_only = True
+    # if true then only create the video files but don't download. Useful for
+    # getting the new filenames when a change has been made to file_name_format
+    touch_video_files_only = True
     
     # the original legacy file name didn't include the post_id, so if there were
     # multiple posts in a single day with the same description (or an empty
