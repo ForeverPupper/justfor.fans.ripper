@@ -101,10 +101,11 @@ def photo_save(ppost):
         ppath_legacy = os.path.join(folder, cleanFilename(ppost.title_legacy))
         ppath = os.path.join(folder, cleanFilename(ppost.title))
 
-        if not config.overwrite_existing and os.path.exists(ppath_legacy):
+        if not config.overwrite_existing and  os.path.exists(ppath_legacy) and ppath_legacy not in legacy_file_names_already_seen_this_run:
             print(f'p: <<exists skip (legacy filename)>>: {ppath_legacy}', flush=True)
             ii += 1
             append_to_legacy_rename_script_file(folder, ppath_legacy, ppath)
+            legacy_file_names_already_seen_this_run.append(ppath_legacy)
             skip_next_network_request_delay = True
             continue
 
@@ -147,9 +148,10 @@ def video_save(vpost):
     vpath_legacy = os.path.join(folder, cleanFilename(vpost.title_legacy))
     vpath = os.path.join(folder, cleanFilename(vpost.title))
 
-    if not config.overwrite_existing and os.path.exists(vpath_legacy):
+    if not config.overwrite_existing and os.path.exists(vpath_legacy) and vpath_legacy not in legacy_file_names_already_seen_this_run:
         print(f'v: <<exists skip (legacy filename)>>: {vpath_legacy}', flush=True)
         append_to_legacy_rename_script_file(folder, vpath_legacy, vpath)
+        legacy_file_names_already_seen_this_run.append(vpath_legacy)
         skip_next_network_request_delay = True
         return
     
@@ -210,9 +212,10 @@ def text_save(tpost):
     tpath_legacy = os.path.join(folder, cleanFilename(tpost.title_legacy))
     tpath = os.path.join(folder, cleanFilename(tpost.title))
 
-    if not config.overwrite_existing and os.path.exists(tpath_legacy):
+    if not config.overwrite_existing and os.path.exists(tpath_legacy) and tpath_legacy not in legacy_file_names_already_seen_this_run:
         print(f'v: <<exists skip (legacy filename)>>: {tpath_legacy}', flush=True)
         append_to_legacy_rename_script_file(folder, tpath_legacy, tpath)
+        legacy_file_names_already_seen_this_run.append(tpath_legacy)
         return
     
     if not config.overwrite_existing and os.path.exists(tpath):
@@ -302,6 +305,24 @@ if __name__ == "__main__":
     api_url = config.api_url
 
     skip_next_network_request_delay = False
+    
+    # the original legacy file name didn't include the post_id, so if there were
+    # multiple posts in a single day with the same description (or an empty
+    # description) then the script would see all but the first post as a
+    # duplicate since the file name existed and wouldn't download them.
+    # The new default file name includes the post_id, but we need to avoid
+    # detecting the same legacy file name repeatedly for those other posts;
+    # there's no perfect way to do this since we lack a way to know if the files
+    # are the same (and can't do a head call to compare size for m3u8 streams),
+    # so the next best solution is tracking whether we've already detected a
+    # particular legacy file name and ignored it. Once it's added to this list
+    # we don't match it again and we'll write out to the new default file name.
+    # One downside: this only tracks file names seen during a run of the script,
+    # so if you run the script with the startAt parameter and happen to start in
+    # the middle of a day where there are multiple identical legacy file names
+    # then the wrong file will be matched. It's recommended to run the script
+    # without the startAt parameter the first time.
+    legacy_file_names_already_seen_this_run = []
 
     loopit = True
     loopct = 0

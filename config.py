@@ -17,7 +17,11 @@ write_legacy_rename_script = True
 #  photo_seq (do not change this)
 #  ext (do not change this)
 
-file_name_format = '{post_date}_{desc}{photo_seq}.{ext}'
+file_name_format = '{post_date}_{post_id}_{desc}{photo_seq}.{ext}'
+# this is the format used by the original script, used for matching old
+# downloaded files to avoid re-downloading. See the readme for details around
+# the legacy rename script that can be automatically created
+file_name_format_legacy = '{post_date}_{desc}{photo_seq}.{ext}'
 
 # PROBABLY DON'T NEED TO CHANGE THIS
 api_url = 'https://justfor.fans/ajax/getPosts.php?UserID={userid}&Type=One&PosterID={posterid}&StartAt={seq}&Source=Home&UserHash4={hash}'

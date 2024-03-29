@@ -6,7 +6,7 @@ Thing to download all content from someone's JustFor.Fans. Please note that you 
 
 Please do not contact any developers about downloading content without paying or attempting to circumvent payment.
 
-Written in Python 3.8 and working against JustFor.Fans as 20231224.
+Written in Python 3.8 and working against JustFor.Fans as 20240329.
 
 ## Install
 
@@ -22,8 +22,9 @@ Written in Python 3.8 and working against JustFor.Fans as 20231224.
         - `post_date`
         - `post_id`
         - `desc`
-    5. `desc_long_max_length` - set the maximum length of filenames generated from the post description
-    6. `write_legacy_rename_script` - if you've saved files with the older version of this script (which uses short filenames) the script will detect them and write a shell script/batch file that you can use to rename those files to the longer format. No renaming will be performed automatically.
+    5. `file_name_format_legacy` - filename format used by the original script, and used in this one for matching existing files to avoid re-downloading (also see notes about the legacy rename script below)
+    6. `desc_long_max_length` - set the maximum length of filenames generated from the post description
+    7. `write_legacy_rename_script` - if you've saved files with the older version of this script (which uses short filenames) the script will detect them and write a shell script/batch file that you can use to rename those files to the longer format. No renaming will be performed automatically.
 
 ## How to use
 

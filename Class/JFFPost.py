@@ -40,7 +40,7 @@ class JFFPost:
         self.desc = self.desc[0:config.desc_long_max_length].strip()
 
         # sampled as legacy filename
-        self.title_legacy = config.file_name_format \
+        self.title_legacy = config.file_name_format_legacy \
             .replace('{name}', self.name) \
             .replace('{post_date}', self.post_date) \
             .replace('{post_id}', self.post_id[-5:]) \
