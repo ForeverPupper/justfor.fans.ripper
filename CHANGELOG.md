@@ -1,5 +1,8 @@
 # Justfor.Fans Ripper Changelog
 
+- 1.2.1
+    - Fix for photo series not using the new file name format.
+
 - 1.2.0
     - Update default file name format to include `post_id` to avoid accidentally skipping download of posts that were made on the same day with the same or empty description (previously their file names would match, triggering the skipping behaviour). Added a feature to try to handle this as best we can for legacy file names and the legacy rename script.
 

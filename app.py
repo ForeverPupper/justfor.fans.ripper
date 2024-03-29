@@ -116,7 +116,7 @@ def photo_save(ppost):
             continue
 
         photos_url.append([
-            ppath_legacy, imgsrc
+            ppath, imgsrc
         ])
 
         ii += 1
