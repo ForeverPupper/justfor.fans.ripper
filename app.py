@@ -274,7 +274,9 @@ def parse_and_get(html_text):
         # remove random junk after the date
         thispost.post_date_str = re.sub('This post.*$', '', thispost.post_date_str)
         thispost.post_date_str = thispost.post_date_str.strip().strip()
-        thispost.post_id = pp.attrs['id']
+        # get the post's stable id
+        postMenu = pp.select('.postMenu')[0]
+        thispost.post_id = postMenu.attrs['id'].replace('postMenu', '')
         thispost.full_text = ptext[0].text.strip() if ptext else ''
         thispost.prepdata()
 
