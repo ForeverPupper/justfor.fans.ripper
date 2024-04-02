@@ -148,61 +148,65 @@ def video_save(vpost):
     vpath_legacy = os.path.join(folder, cleanFilename(vpost.title_legacy))
     vpath = os.path.join(folder, cleanFilename(vpost.title))
 
-    if not config.overwrite_existing and os.path.exists(vpath_legacy) and vpath_legacy not in legacy_file_names_already_seen_this_run:
-        print(f'v: <<exists skip (legacy filename)>>: {vpath_legacy}', flush=True)
-        append_to_legacy_rename_script_file(folder, vpath_legacy, vpath)
-        legacy_file_names_already_seen_this_run.append(vpath_legacy)
+    if touch_video_files_only == True:
+        pathlib.Path(vpath).touch()
         skip_next_network_request_delay = True
-        return
+    else:
+        if not config.overwrite_existing and os.path.exists(vpath_legacy) and vpath_legacy not in legacy_file_names_already_seen_this_run:
+            print(f'v: <<exists skip (legacy filename)>>: {vpath_legacy}', flush=True)
+            append_to_legacy_rename_script_file(folder, vpath_legacy, vpath)
+            legacy_file_names_already_seen_this_run.append(vpath_legacy)
+            skip_next_network_request_delay = True
+            return
+        
+        if not config.overwrite_existing and os.path.exists(vpath):
+            print(f'v: <<exists skip>>: {vpath}', flush=True)
+            skip_next_network_request_delay = True
+            return
     
-    if not config.overwrite_existing and os.path.exists(vpath):
-        print(f'v: <<exists skip>>: {vpath}', flush=True)
-        skip_next_network_request_delay = True
-        return
+        try:
+            skip_next_network_request_delay = False
+            vidurljumble = vpost.post_soup.select('div.videoBlock a')[0].attrs['onclick']
+            vidurl = json.loads(vidurljumble.split(', ')[1])
 
-    try:
-        skip_next_network_request_delay = False
-        vidurljumble = vpost.post_soup.select('div.videoBlock a')[0].attrs['onclick']
-        vidurl = json.loads(vidurljumble.split(', ')[1])
+            vpost.url_vid = vidurl.get('1080p', '')
+            vpost.url_vid = vidurl.get('540p', '') if vpost.url_vid == '' else vpost.url_vid
 
-        vpost.url_vid = vidurl.get('1080p', '')
-        vpost.url_vid = vidurl.get('540p', '') if vpost.url_vid == '' else vpost.url_vid
+            print(f'v: {vpath}', flush=True)
 
-        print(f'v: {vpath}', flush=True)
+            response = requests.head(vpost.url_vid)
 
-        response = requests.head(vpost.url_vid)
+            if response.headers['content-type'].startswith('application/x-mpegurl'):
+                # handle as a gzip'ed m3u8 file to be downloaded via yt-dlp
+                print('Got gzip\'ed m3u8 file, passing to yt-dlp to save stream:', flush=True)
+                response_m3u8 = requests.get(vpost.url_vid, stream=True)
+                m3u8_path = vpath + '.m3u8'
+                m3u8_file = open(m3u8_path, "wb")
+                m3u8_file.write(response_m3u8.content)
+                m3u8_file.close()
 
-        if response.headers['content-type'].startswith('application/x-mpegurl'):
-            # handle as a gzip'ed m3u8 file to be downloaded via yt-dlp
-            print('Got gzip\'ed m3u8 file, passing to yt-dlp to save stream:', flush=True)
-            response_m3u8 = requests.get(vpost.url_vid, stream=True)
-            m3u8_path = vpath + '.m3u8'
-            m3u8_file = open(m3u8_path, "wb")
-            m3u8_file.write(response_m3u8.content)
-            m3u8_file.close()
+                # generate a file protocol path we can use for yt-dlp. It allows file protocol paths, but only absolute
+                # ones, except if it's on a window drive because the drive letter breaks it, so it has to be absolute to
+                # the current drive, sigh. The actual usuable value is something like `file:///downloads/blah%2Ething.m3u8`
+                full_dir_path = os.path.dirname(pathlib.Path.cwd().joinpath(vpath))
+                file_protocol_path = 'file://' + urllib.parse.quote(str(pathlib.Path(full_dir_path).relative_to(pathlib.Path.cwd().drive)).replace('\\', '/') + '/' + pathlib.Path(m3u8_path).parts[-1])
 
-            # generate a file protocol path we can use for yt-dlp. It allows file protocol paths, but only absolute
-            # ones, except if it's on a window drive because the drive letter breaks it, so it has to be absolute to
-            # the current drive, sigh. The actual usuable value is something like `file:///downloads/blah%2Ething.m3u8`
-            full_dir_path = os.path.dirname(pathlib.Path.cwd().joinpath(vpath))
-            file_protocol_path = 'file://' + urllib.parse.quote(str(pathlib.Path(full_dir_path).relative_to(pathlib.Path.cwd().drive)).replace('\\', '/') + '/' + pathlib.Path(m3u8_path).parts[-1])
+                cmd = 'yt-dlp.exe -o "' + full_dir_path + '/%(title)s" --retries "infinite" --fragment-retries "infinite" --windows-filenames --no-overwrites --enable-file-urls "' + file_protocol_path + '"'
+                os.system(cmd)
 
-            cmd = 'yt-dlp.exe -o "' + full_dir_path + '/%(title)s" --retries "infinite" --fragment-retries "infinite" --windows-filenames --no-overwrites --enable-file-urls "' + file_protocol_path + '"'
-            os.system(cmd)
-
-            print('m3u8 file removed: ' + m3u8_path, flush=True)
-            os.remove(m3u8_path)
-            del response_m3u8
-        else:
-            response_mp4 = requests.get(vpost.url_vid, stream=True)
-            with open(vpath, 'wb') as out_file:
-                shutil.copyfileobj(response_mp4.raw, out_file)
-            del response_mp4
-        del response
-
-    except Exception as e:
-        print(e, flush=True)
-        print(logging.traceback.format_exc(), flush=True)
+                print('m3u8 file removed: ' + m3u8_path, flush=True)
+                os.remove(m3u8_path)
+                del response_m3u8
+            else:
+                response_mp4 = requests.get(vpost.url_vid, stream=True)
+                with open(vpath, 'wb') as out_file:
+                    shutil.copyfileobj(response_mp4.raw, out_file)
+                del response_mp4
+            del response
+            
+        except Exception as e:
+            print(e, flush=True)
+            print(logging.traceback.format_exc(), flush=True)
 
 def text_save(tpost):
     tpost.ext = 'txt'
@@ -312,6 +316,10 @@ if __name__ == "__main__":
     api_url = config.api_url
 
     skip_next_network_request_delay = False
+    
+    # if true then only create the video files but don't download. Useful for
+    # getting the new filenames when a change has been made to file_name_format
+    touch_video_files_only = True
     
     # the original legacy file name didn't include the post_id, so if there were
     # multiple posts in a single day with the same description (or an empty
