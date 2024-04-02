@@ -254,6 +254,11 @@ def parse_and_get(html_text):
         if len(pp.select('.shoutoutNotice')) > 0:
             print("parse_and_get: skipping pinned post", flush=True)
             continue
+        
+        # ignore videos that are still processing
+        if len(pp.select('.videoProcessingNotice')) > 0:
+            print("parse_and_get: skipping video still processing", flush=True)
+            continue
 
         ptext = pp.select('div.fr-view')
 

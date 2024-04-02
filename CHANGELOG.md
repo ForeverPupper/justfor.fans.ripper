@@ -1,5 +1,9 @@
 # Justfor.Fans Ripper Changelog
 
+- 1.3.0
+    - Skip video files that are still processing.
+    - Add a config called "touch_video_files_only" that disables downloading videos but still creates their files. This is useful for getting the new filenames when a change has been made to `file_name_format`.
+
 - 1.2.1
     - Fix for the post ID not being sampled from a stable source, so it could change every run.
     - Fix for photo series not using the new file name format.
