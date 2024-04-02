@@ -148,7 +148,7 @@ def video_save(vpost):
     vpath_legacy = os.path.join(folder, cleanFilename(vpost.title_legacy))
     vpath = os.path.join(folder, cleanFilename(vpost.title))
 
-    if touch_video_files_only == True:
+    if create_video_files_but_do_not_download == True:
         pathlib.Path(vpath).touch()
         skip_next_network_request_delay = True
     else:
@@ -319,7 +319,7 @@ if __name__ == "__main__":
     
     # if true then only create the video files but don't download. Useful for
     # getting the new filenames when a change has been made to file_name_format
-    touch_video_files_only = True
+    create_video_files_but_do_not_download = True
     
     # the original legacy file name didn't include the post_id, so if there were
     # multiple posts in a single day with the same description (or an empty

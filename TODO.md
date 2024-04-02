@@ -1,5 +1,5 @@
 - remove yt-dlp.exe and use system version instead (so it works on Windows + Mac + Linux)
-- stop writing out text for pinned and shoutouts and pay posts
+- stop writing out text files for pinned and shoutouts and pay posts
 - log errors to a file in the current working folder so we know which posts failed
 - legacy rename script:
     - depending on environment, write either bash script or batch file (currently only latter)

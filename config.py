@@ -28,4 +28,4 @@ api_url = 'https://justfor.fans/ajax/getPosts.php?UserID={userid}&Type=One&Poste
 
 # this disables downloading of videos but still creates them as 0-byte files.
 # This is useful for getting the new filenames when a change has been made to file_name_format.
-touch_video_files_only = False
+create_video_files_but_do_not_download = False
